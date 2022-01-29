@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yzh.market.mapper.my.MyMarketCommentMapper">
+
+  <sql id="columns">
+       a.id AS "id",
+       a.id AS "key",
+       a.content AS "content",
+       a.message_id AS "message.id",
+       (select d.message_title from market_message d where d.id=a.message_id) AS "message.messageTitle",
+       a.user_id AS "user.id",
+       (select d.image from market_user d where d.id=a.user_id) AS "user.image",
+       (select d.user_name from market_user d where d.id=a.user_id) AS "user.userName",
+       (select d.student_no from market_user d where d.id=a.user_id) AS "user.studentNo",
+       (select d.id from market_user d where d.id=a.create_by) AS "createBy.id",
+       (select d.user_name from market_user d where d.id=a.create_by) AS "createBy.userName",
+       a.update_date AS "updateDate",
+       a.create_date AS "createDate",
+       (select s.id from market_user s where s.id=a.update_by) AS "updateBy.id",
+       (select s.user_name from market_user s where s.id=a.update_by) AS "updateBy.userName",
+       a.del_flag AS "delFlag"
+  </sql>
+  
+  <select id="findList" resultType="MarketCommentVo">
+  		select 
+  		<include refid="columns"/>
+  		from market_comment a 
+  		where a.del_flag=0 
+  		<if test="user != null and user != ''">
+            and a.user_id = #{user.id}
+        </if>
+  		<if test="message != null and message.id != null">
+            and a.message_id = #{message.id}
+        </if>
+  		<if test="content != null and content!= null">
+            AND a.content LIKE CONCAT('%', #{content}, '%') 
+        </if>
+  </select> 
+  <insert id="save">
+        INSERT INTO market_comment(
+            id,
+            content,
+           	message_id,
+            user_id,
+            del_flag,
+            create_by,
+            create_date,
+            update_by,
+            update_date
+        ) VALUES (
+            #{id},
+            #{content},
+            #{message.id},
+            #{user.id},
+            #{delFlag},
+            #{createBy.id},
+            #{createDate},
+            #{updateBy.id},
+            #{updateDate}
+        )
+    </insert>
+     <update id="update">
+        UPDATE market_comment SET
+            content = #{content},
+            message_id = #{message.id},
+            user_id = #{user.id},
+            del_flag = #{delFlag},
+            update_by = #{updateBy.id},
+            update_date = #{updateDate}
+        WHERE id = #{id}
+    </update>
+</mapper>

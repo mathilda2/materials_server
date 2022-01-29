@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yzh.market.mapper.my.MyMarketOldValueMapper">
+
+  <sql id="columns">
+       a.id AS "id",
+       a.old_value AS "oldValue",
+       a.old_name AS "oldName",
+ 	   (select d.id from market_user d where d.id=a.create_by) AS "createBy.id",
+       (select d.user_name from market_user d where d.id=a.create_by) AS "createBy.userName",
+       (select s.id from market_user s where s.id=a.update_by) AS "updateBy.id",
+       (select s.user_name from market_user s where s.id=a.update_by) AS "updateBy.userName",
+       a.update_date AS "updateDate",
+       a.create_date AS "createDate",
+       a.del_flag AS "delFlag"
+  </sql>
+  
+  <select id="findList" resultType="MarketOldValueVo">
+  		select 
+  			<include refid="columns"/>
+  		from market_old_value a
+  		where 1=1 and del_flag = 0 
+  		<if test="oldValue  != null and oldValue  != ''">
+            AND a.old_value LIKE CONCAT('%', #{oldValue }, '%') 
+        </if>
+  		<if test="oldName  != null and oldName  != ''">
+            AND a.old_name LIKE CONCAT('%', #{oldName }, '%') 
+        </if>
+        order by a.create_date
+  </select> 
+  
+  <insert id="insert">
+        INSERT INTO market_old_value(
+            id,
+            old_value,
+            old_name,
+            del_flag,
+            create_by,
+            create_date,
+            update_by,
+            update_date
+        ) VALUES (
+            #{id},
+            #{oldValue},
+            #{oldName},
+            #{delFlag},
+            #{createBy.id},
+            #{createDate},
+            #{updateBy.id},
+            #{updateDate}
+        )
+    </insert>
+     <update id="update">
+        UPDATE market_old_value SET 
+            old_value = #{oldValue},
+            old_name = #{oldName},
+            update_by = #{updateBy.id},
+            update_date = #{updateDate}
+        WHERE id = #{id}
+    </update>
+</mapper>

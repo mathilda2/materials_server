@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yzh.market.mapper.my.MyMarketMessageMapper">
+
+  <sql id="columns">
+       a.id AS "id",
+       a.id AS "key",
+       a.message_title AS "messageTitle",
+       a.message_desc AS "messageDesc",
+       (select d.type_desc from market_type d where d.id=a.type_id) AS "type.typeDesc",
+       (select d.area_desc from market_area d where d.id=a.area_id) AS "area.areaDesc",
+       a.type_id AS "type.id",
+       a.area_id AS "area.id",
+       a.price AS "price",
+       a.user_id AS "user.id",
+       a.user_name AS "user.userName",
+       a.user_phone AS "user.phone",
+       a.user_email AS "user.email",
+       a.old_value AS "oldValue",
+       a.top_value AS "topValue",
+       (select d.id from market_user d where d.id=a.create_by) AS "createBy.id",
+       (select d.user_name from market_user d where d.id=a.create_by) AS "createBy.userName",
+       a.update_date AS "updateDate",
+       a.create_date AS "createDate",
+       (select s.id from market_user s where s.id=a.update_by) AS "updateBy.id",
+       (select s.user_name from market_user s where s.id=a.update_by) AS "updateBy.userName",
+       a.del_flag AS "delFlag",
+       a.flag AS "flag"
+  </sql>
+  
+  <select id="get" resultType="MarketMessageVo">
+  		select 
+  		<include refid="columns"/>
+  		from market_message a where a.id=#{id}
+  </select> 
+  <select id="selectListByUserId" resultType="MarketMessageVo">
+  		select 
+  		<include refid="columns"/>
+  		from market_message a
+  		where 1=1 
+  		<if test="user != null and user != ''">
+            and a.user_id = #{user.id}
+        </if>
+        <if test="messageTitle != null and messageTitle != ''">
+            AND a.message_title LIKE CONCAT('%', #{messageTitle}, '%') 
+        </if>
+        <if test="messageDesc != null and messageDesc != ''">
+            AND a.message_desc LIKE CONCAT('%', #{messageDesc}, '%') 
+        </if>
+  		<if test="type != null and type != ''">
+            AND a.type_id = #{type.id}
+        </if>
+  		<if test="area != null and area != ''">
+            AND a.area_id = #{area.id}
+        </if>
+  		<if test="salesType != null and salesType != ''">
+            AND a.flag = #{salesType.id}
+        </if>
+  </select> 
+  <select id="selectListByTypeId" resultType="MarketMessageVo">
+  		select 
+  		<include refid="columns"/>
+  		from market_message a
+  		where a.type_id=#{typeId}
+  		order by a.create_date desc 
+  </select> 
+  <select id="selectTopList" resultType="MarketMessageVo">
+  		select 
+  		<include refid="columns"/>
+  		from market_message a
+  		order by a.top_value desc 
+  </select> 
+  <insert id="save">
+        INSERT INTO market_message(
+            id,
+            message_title,
+            message_desc,
+            type_id,
+            area_id,
+            price,
+            user_id,
+            user_name,
+            user_phone,
+            user_email,
+            old_value,
+            top_value,
+            flag,
+            del_flag,
+            create_by,
+            create_date,
+            update_by,
+            update_date
+        ) VALUES (
+            #{id},
+            #{messageTitle},
+            #{messageDesc},
+            #{type.id},
+            #{area.id},
+            #{price},
+            #{user.id},
+            #{user.userName},
+            #{user.phone},
+            #{user.email},
+            #{oldValue},
+            #{topValue},
+            #{flag},
+            #{delFlag},
+            #{createBy.id},
+            #{createDate},
+            #{updateBy.id},
+            #{updateDate}
+        )
+    </insert>
+     <update id="update">
+        UPDATE market_message SET
+            message_title = #{messageTitle},
+            message_desc = #{messageDesc},
+            type_id = #{type.id},
+            area_id = #{area.id},
+            price = #{price},
+            user_id = #{user.id},
+            user_name = #{user.userName},
+            user_phone = #{user.phone},
+            user_email = #{user.email},
+            old_value = #{oldValue},
+            top_value = #{topValue},
+            flag = #{flag},
+            del_flag = #{delFlag},
+            update_by = #{updateBy.id},
+            update_date = #{updateDate}
+        WHERE id = #{id}
+    </update>
+</mapper>

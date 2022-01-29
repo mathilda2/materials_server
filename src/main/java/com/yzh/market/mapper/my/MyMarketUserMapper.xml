@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yzh.market.mapper.my.MyMarketUserMapper">
+
+  <sql id="columns">
+       a.id AS "id",
+       a.user_name AS "userName",
+       a.pass_word AS "passWord",
+       a.image AS "image",
+       a.student_no AS "studentNo",
+       a.sex AS "sex",
+       a.birthday AS "birthday",
+       a.email AS "email",
+       a.phone AS "phone",
+ 	   (select d.id from market_user d where d.id=a.create_by) AS "createBy.id",
+       (select d.user_name from market_user d where d.id=a.create_by) AS "createBy.userName",
+       (select s.id from market_user s where s.id=a.update_by) AS "updateBy.id",
+       (select s.user_name from market_user s where s.id=a.update_by) AS "updateBy.userName",
+       a.update_date AS "updateDate",
+       a.create_date AS "createDate",
+       a.del_flag AS "delFlag"
+  </sql>
+  
+  <select id="selectUserByName" resultType="MarketUser">
+  		select 
+  			<include refid="columns"/>
+  		from market_user a 
+  		where a.user_name=#{userName}
+  </select> 
+  
+  <select id="selectList" resultType="MarketUserVo">
+  		select 
+  			<include refid="columns"/>
+  		from market_user a
+  		where 1=1 and del_flag = 0 
+  		<if test="userName != null and userName != ''">
+            AND a.user_name LIKE CONCAT('%', #{userName}, '%') 
+        </if>
+  		<if test="studentNo != null and studentNo != ''">
+            AND a.student_no LIKE CONCAT('%', #{studentNo}, '%') 
+        </if>
+  		<if test="email != null and email != ''">
+            AND a.email LIKE CONCAT('%', #{email}, '%') 
+        </if>
+  		<if test="sex != null and sex != ''">
+            AND a.sex = #{sex}
+        </if>
+        order by a.create_date
+  </select> 
+  <insert id="insert">
+        INSERT INTO market_user(
+            id,
+            user_name,
+            birthday,
+            pass_word,
+            image,
+            student_no,
+            sex,
+            email,
+            phone,
+            del_flag,
+            create_by,
+            create_date,
+            update_by,
+            update_date
+        ) VALUES (
+            #{id},
+            #{userName},
+            #{birthday},
+            #{passWord},
+            #{image},
+            #{studentNo},
+            #{sex},
+            #{email},
+            #{phone},
+            #{delFlag},
+            #{createBy.id},
+            #{createDate},
+            #{updateBy.id},
+            #{updateDate}
+        )
+    </insert>
+     <update id="update">
+        UPDATE market_user SET 
+            user_name = #{userName},
+            pass_word = #{passWord},
+            birthday = #{birthday},
+            image = #{image},
+            student_no = #{studentNo},
+            sex = #{sex},
+            email = #{email},
+            phone = #{phone},
+            del_flag = #{delFlag},
+            update_by = #{updateBy.id},
+            update_date = #{updateDate}
+        WHERE id = #{id}
+    </update>
+</mapper>

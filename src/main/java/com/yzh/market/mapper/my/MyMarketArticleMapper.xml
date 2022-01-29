@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yzh.market.mapper.my.MyMarketArticleMapper">
+
+  <sql id="columns">
+       a.id AS "id",
+       a.title AS "title",
+       a.content AS "content",
+ 	   (select d.id from market_user d where d.id=a.create_by) AS "createBy.id",
+       (select d.user_name from market_user d where d.id=a.create_by) AS "createBy.userName",
+       (select s.id from market_user s where s.id=a.update_by) AS "updateBy.id",
+       (select s.user_name from market_user s where s.id=a.update_by) AS "updateBy.userName",
+       a.update_date AS "updateDate",
+       a.create_date AS "createDate",
+       a.del_flag AS "delFlag"
+  </sql>
+  <select id="get" resultType="MarketArticleVo">
+  		select 
+  		<include refid="columns"/>
+  		from market_article a where a.id=#{id}
+  </select> 
+  <select id="findList" resultType="MarketArticleVo">
+  		select 
+  			<include refid="columns"/>
+  		from market_article a
+  		where 1=1 and del_flag = 0 
+  		<if test="title != null and title != ''">
+            AND a.title LIKE CONCAT('%', #{title}, '%') 
+        </if>
+  		<if test="content != null and content != ''">
+            AND a.content LIKE CONCAT('%', #{content}, '%') 
+        </if>
+        order by a.create_date
+  </select> 
+  
+  <insert id="insert">
+        INSERT INTO market_article(
+            id,
+            title,
+            content,
+            del_flag,
+            create_by,
+            create_date,
+            update_by,
+            update_date
+        ) VALUES (
+            #{id},
+            #{title},
+            #{content},
+            #{delFlag},
+            #{createBy.id},
+            #{createDate},
+            #{updateBy.id},
+            #{updateDate}
+        )
+    </insert>
+     <update id="update">
+        UPDATE market_article SET 
+            title = #{title},
+            content = #{content},
+            update_by = #{updateBy.id},
+            update_date = #{updateDate}
+        WHERE id = #{id}
+    </update>
+</mapper>

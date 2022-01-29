@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yzh.market.mapper.my.MyMarketAreaMapper">
+
+  <sql id="columns">
+       a.id AS "id",
+       a.area_name AS "areaName",
+       a.area_desc AS "areaDesc",
+ 	   (select d.id from market_user d where d.id=a.create_by) AS "createBy.id",
+       (select d.user_name from market_user d where d.id=a.create_by) AS "createBy.userName",
+       (select s.id from market_user s where s.id=a.update_by) AS "updateBy.id",
+       (select s.user_name from market_user s where s.id=a.update_by) AS "updateBy.userName",
+       a.update_date AS "updateDate",
+       a.create_date AS "createDate",
+       a.del_flag AS "delFlag"
+  </sql>
+  
+  <select id="findList" resultType="MarketAreaVo">
+  		select 
+  			<include refid="columns"/>
+  		from market_area a
+  		where 1=1 and del_flag = 0 
+  		<if test="areaName != null and areaName != ''">
+            AND a.area_name LIKE CONCAT('%', #{areaName}, '%') 
+        </if>
+  		<if test="areaDesc != null and areaDesc != ''">
+            AND a.area_desc LIKE CONCAT('%', #{areaDesc}, '%') 
+        </if>
+        order by a.create_date
+  </select> 
+  
+  <insert id="insert">
+        INSERT INTO market_area(
+            id,
+            area_name,
+            area_desc,
+            del_flag,
+            create_by,
+            create_date,
+            update_by,
+            update_date
+        ) VALUES (
+            #{id},
+            #{areaName},
+            #{areaDesc},
+            #{delFlag},
+            #{createBy.id},
+            #{createDate},
+            #{updateBy.id},
+            #{updateDate}
+        )
+    </insert>
+     <update id="update">
+        UPDATE market_area SET 
+            area_name = #{areaName},
+            area_desc = #{areaDesc},
+            update_by = #{updateBy.id},
+            update_date = #{updateDate}
+        WHERE id = #{id}
+    </update>
+</mapper>
